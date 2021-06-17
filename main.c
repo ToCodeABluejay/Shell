@@ -24,6 +24,10 @@
 
 int main(int argc, char *argv[])
 {
+	#ifdef __OpenBSD__
+	pledge("stdio rpath proc exec");
+	#endif
+
 	isnotsu = geteuid(); // Check if the user is a super-user or not
     while (1)
     //Infinite loop to keep the program going until exited
