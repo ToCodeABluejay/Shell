@@ -22,6 +22,7 @@
  */
 #include "shell.h"
 
+//This will store our current working directory
 char cwdir[2048];
 
 /*Declare a constant equal to the size of a character
