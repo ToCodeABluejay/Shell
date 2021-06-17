@@ -173,8 +173,19 @@ int ShellCommands(char **args)
 		}
 		else
 		{
-			if(!strcmp(args[1], "~"))
-				d = getenv("HOME");
+			if(!strncmp(args[1], "~", 1)) // In this context '~' is used to mean the users home directory
+			{	//So this sections builds a relative pathway from the starting point of the given home directory
+				int i=0, j=0;	//In place of the beginning '~'
+				i+=len(getenv("HOME"));	//So that '/home/jdoe' can be represented as '~'
+				j+=len(args[1]);	//And so that '~/Documents' would be equivalent to '/home/jdoe/Documents'
+		
+				char reldir[i+j];
+		
+				strcpy(reldir, getenv("HOME"));
+				for(i, j=1;j<=len(args[1]);i++,j++) reldir[i]=args[1][j];
+				
+				d = reldir;
+			}
 			else
 				d = args[1];
 			i = chdir(d);

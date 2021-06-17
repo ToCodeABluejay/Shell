@@ -59,6 +59,6 @@ typedef struct
 long long len(char*);
 char **wordify(char*);
 command getCommands();
-void execCmd(command current);
+void execCmd(command);
 
 #endif
