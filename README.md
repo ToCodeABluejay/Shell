@@ -6,4 +6,4 @@ It is a pretty simple shell with just a few basic internal functions, and it sho
 Simply compile with the following command:
 cc command.c main.c string.c -o shell -g
 
-The '-g' is included in order to include debugging symbols, to be used when running through a debugger, as it is not stable yet.
+The '-g' is included in order to include debugging symbols to be used when running through a debugger, as it is not stable yet.
