@@ -215,7 +215,10 @@ void execCmd(command current)
 			if(current.argv[0][0]!='/'&&strncmp(current.argv[0], "./", 2))
 			{
 				exec = (char*) malloc(s_char * (len(current.argv[0])+5));
-				strcat(exec, "/bin/");
+				if (!isnotsu)
+					strcat(exec, "/sbin/");
+				else
+					strcat(exec, "/bin/");
 				strcat(exec, current.argv[0]);
 				current.argv[0] = exec;
 			}

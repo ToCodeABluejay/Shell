@@ -39,6 +39,8 @@ extern int errno;
 extern const size_t s_char;
 extern FILE *input;
 
+bool isnotsu; // Tracks super-user status
+
 /* Typedef defines a new datatype called 'command' which is composed of a 'struct',
  * in other words, a 'structure', which is composed of an integer
  * 'argc' which keeps track of how many arguments are passed to the command, and an

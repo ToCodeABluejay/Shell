@@ -23,11 +23,17 @@
 #include "shell.h"
 
 int main(int argc, char *argv[])
-{	
+{
+	isnotsu = geteuid(); // Check if the user is a super-user or not
     while (1)
     //Infinite loop to keep the program going until exited
     {
-    	printf("%s$ ", getenv("HOME")); //Prints the prompt
+		char p;
+		if (!isnotsu)
+			p = '#';
+		else
+			p = '$';
+    	printf("%s%c ", getenv("HOME"), p); //Prints the prompt
     	execCmd(getCommands()); //Gets and executes the commands
     }
 }
