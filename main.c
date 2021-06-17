@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 			p = '#';
 		else
 			p = '$';
-    	printf("%s%c ", getenv("HOME"), p); //Prints the prompt
-    	execCmd(getCommands()); //Gets and executes the commands
+    		printf("%s%c ", getenv("HOME"), p); //Prints the prompt
+    		execCmd(getCommands()); //Gets and executes the commands
 	}
 }
