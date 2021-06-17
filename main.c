@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
 	#endif
 
 	isnotsu = geteuid(); // Check if the user is a super-user or not
-    while (1)
-    //Infinite loop to keep the program going until exited
-    {
+	while (1)
+	//Infinite loop to keep the program going until exited
+	{
 		char p;
 		if (!isnotsu)
 			p = '#';
@@ -41,5 +41,5 @@ int main(int argc, char *argv[])
 			p = '$';
     	printf("%s%c ", getenv("HOME"), p); //Prints the prompt
     	execCmd(getCommands()); //Gets and executes the commands
-    }
+	}
 }
