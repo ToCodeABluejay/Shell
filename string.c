@@ -22,6 +22,8 @@
  */
 #include "shell.h"
 
+char cwdir[2048];
+
 /*Declare a constant equal to the size of a character
  *data type. This will be visible to the entire program
  */

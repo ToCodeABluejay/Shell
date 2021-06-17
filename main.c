@@ -22,10 +22,12 @@
  */
 #include "shell.h"
 
+bool isnotsu;
+
 int main(int argc, char *argv[])
 {
 	#ifdef __OpenBSD__
-	pledge("stdio rpath proc exec");
+	pledge("stdio rpath proc exec", NULL);
 	#endif
 
 	isnotsu = geteuid(); // Check if the user is a super-user or not

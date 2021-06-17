@@ -183,7 +183,10 @@ int ShellCommands(char **args)
 			printf("Could not change directory to %s!\n", d);
 	}
 	else if (!strcmp(args[0], "pwd"))
-		printf("%s\n", get_current_dir_name());
+	{
+		getcwd(cwdir, sizeof(cwdir));
+		printf("%s\n", cwdir);
+	}
 	else if (!strcmp(args[0], "quit"))
 		exit(0);
 	else if (!strcmp(args[0], "ls"))

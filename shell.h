@@ -39,7 +39,8 @@ extern int errno;
 extern const size_t s_char;
 extern FILE *input;
 
-bool isnotsu; // Tracks super-user status
+extern bool isnotsu; // Tracks super-user status
+extern char cwdir[2048];
 
 /* Typedef defines a new datatype called 'command' which is composed of a 'struct',
  * in other words, a 'structure', which is composed of an integer
