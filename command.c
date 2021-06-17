@@ -164,6 +164,9 @@ int ShellCommands(char **args)
 {
 	if (!strcmp(args[0], "cd"))
 	{
+		#ifdef __OpenBSD__
+		pledge("stdio rpath", NULL);
+		#endif
 		int i;
 		char *d;
 		if(!args[1])
@@ -191,19 +194,30 @@ int ShellCommands(char **args)
 			i = chdir(d);
 		}
 		if(i)
-			printf("Could not change directory to %s!\n", d);
+			fprintf(stderr, "Could not change directory to %s!\n", d);
 	}
 	else if (!strcmp(args[0], "pwd"))
 	{
+		#ifdef __OpenBSD__
+		pledge("stdio rpath", NULL);
+		#endif
 		getcwd(cwdir, sizeof(cwdir));
 		printf("%s\n", cwdir);
 	}
-	else if (!strcmp(args[0], "quit"))
-		exit(0);
 	else if (!strcmp(args[0], "ls"))
+	{
+		#ifdef __OpenBSD__
+		pledge("stdio rpath", NULL);
+		#endif
 		ls(args);
+	}
 	else if (!strcmp(args[0], "help"))
-		printf("Shell - Final Project Submission\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
+	{
+		#ifdef __OpenBSD__
+		pledge("stdio", NULL);
+		#endif
+		printf("Shell - MIT License\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
+	}
 	else
 		return false;
 	return true;
@@ -214,15 +228,17 @@ void execCmd(command current)
  *data-type, and executes it
  */
 {
-	if (!ShellCommands(current.argv))
+	if (!strcmp(current.argv[0], "quit"))
+		exit(0);
+	int c_pid = fork();
+	if (c_pid < 0)
 	{
-		int c_pid = fork();
-		if (c_pid < 0)
-		{
-			printf("Failed to create child process! Shell failure");
-			exit(1);
-		}
-		if (!c_pid)
+		printf("Failed to create child process! Shell failure");
+		exit(1);
+	}
+	if (!c_pid)
+	{
+		if (!ShellCommands(current.argv))
 		{
 			char *exec;
 			//printf("Child PID is %i\n", getpid());
@@ -243,7 +259,7 @@ void execCmd(command current)
 				printf("Execution failure! Error: %i\n", errno);
 			exit(0);
 		}
-		else
-			wait(&c_pid);
 	}
+	else
+		wait(&c_pid);
 }
