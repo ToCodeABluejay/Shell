@@ -41,17 +41,6 @@ const size_t s_char = sizeof(char);
  *be included in "shell.h"
  */
 
-long long len(char *s)
-/* len(char *s) is a very simple function which takes
- *in an array of characters and returns the length of
- *the array as a long long
- */
-{
-	long long i;
-	for(i=0;*(s+i);i++);
-	return i;
-}
-
 void empty(char *s, long long n)
 /*Takes in two parameters, a character array char *s
  *and a long long, n, and will, starting from the
