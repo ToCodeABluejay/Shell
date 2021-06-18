@@ -34,7 +34,7 @@ const size_t s_char = sizeof(char);
  * it will not be included in "shell.h", so should only
  *be visible and utilized by code inside of this C file
  */
-char *cargv[] = {0};
+
 
 /*All functions declared here are open to use by any
  *file that is a part of the project, as they will all
@@ -60,7 +60,7 @@ void empty(char *s, long long n)
  */
 {
 	long long i;
-	if (n<len(s))
+	if (n<strlen(s))
 		for(i=n; s[i]; i++) s[i] = '\0';
 }
 
@@ -77,6 +77,7 @@ char **wordify(char *s)
  *by spaces and tabs
  */
 {
+	static char *cargv[] = {0};
 	long long i=0, j=0, k=0;
 	char *word = (char *)malloc(s_char * (k+1));
 	
@@ -105,7 +106,7 @@ char **wordify(char *s)
 				 *i represents the current index position in the original string
 				 */
 				k=0, j++, i++;
-				if (i >= len(s))
+				if (i >= strlen(s))
 				{
 					return cargv;
 				}

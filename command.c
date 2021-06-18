@@ -22,52 +22,6 @@
  */
 #include "shell.h"
 
-void ls(char **args)
-/*ls() takes in a directory
- *path and returns a list of
- *its unhidden contents in
- *three parallel rows
- */
-{
-	DIR *dir;
-	struct dirent *contents;
-	if(!args[1])	//If no argument is given, assume that we are working with the curent active
-		dir = opendir("."); // directory
-	else if(!strncmp(args[1], "~", 1)) // In this context '~' is used to mean the users home directory
-	{	//So this sections builds a relative pathway from the starting point of the given home directory
-		int i=0, j=0;	//In place of the beginning '~'
-		i+=len(getenv("HOME"));	//So that '/home/jdoe' can be represented as '~'
-		j+=len(args[1]);	//And so that '~/Documents' would be equivalent to '/home/jdoe/Documents'
-		
-		char reldir[i+j];
-		
-		strcpy(reldir, getenv("HOME"));
-		for(i, j=1;j<=len(args[1]);i++,j++) reldir[i]=args[1][j];
-		
-		dir = opendir(reldir);
-	}
-	else
-		dir = opendir(args[1]);
-	if (dir)
-	{
-		int i=0;	//This is a tracker to keep a tab on how many items have been printed
-		while ((contents = readdir(dir)))
-		{
-			if(strncmp(contents->d_name, ".",1))
-			{
-				if((!(i%3))&&i)	//This is to set a max to the amount of items printed on a line to three
-					putchar('\n');	//Sometimes names can get long, and three might still be tough when they get too long
-				printf("%30s  ", contents->d_name);	//But I though this would be nice to keep everything
-				i++;	//From getting too crowded
-			}
-		}
-		closedir(dir);
-		putchar('\n');
-	}
-	else
-		fprintf(stderr, "Could not open directory!\n");
-}
-
 char *getNxtScrpt()
 /*getNxtScrpt() is almost line a scanf()
  *or other input function built for this
@@ -153,76 +107,6 @@ command getCommands()
 	return commands;
 }
 
-int ShellCommands(char **args)
-/*ShellCommands() determines whether
- *the command returned to execCmd()
- *from getCommands() is an internal
- *command of the shell, or another
- *application. If it is internal, it
- *then runs the corresponding command
- */
-{
-	if (!strcmp(args[0], "cd"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio rpath", NULL);
-		#endif
-		int i;
-		char *d;
-		if(!args[1])
-		{
-			d = getenv("HOME");
-			i = chdir(d);
-		}
-		else
-		{
-			if(!strncmp(args[1], "~", 1)) // In this context '~' is used to mean the users home directory
-			{	//So this sections builds a relative pathway from the starting point of the given home directory
-				int i=0, j=0;	//In place of the beginning '~'
-				i+=len(getenv("HOME"));	//So that '/home/jdoe' can be represented as '~'
-				j+=len(args[1]);	//And so that '~/Documents' would be equivalent to '/home/jdoe/Documents'
-		
-				char reldir[i+j];
-		
-				strcpy(reldir, getenv("HOME"));
-				for(i, j=1;j<=len(args[1]);i++,j++) reldir[i]=args[1][j];
-				
-				d = reldir;
-			}
-			else
-				d = args[1];
-			i = chdir(d);
-		}
-		if(i)
-			fprintf(stderr, "Could not change directory to %s!\n", d);
-	}
-	else if (!strcmp(args[0], "pwd"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio rpath", NULL);
-		#endif
-		getcwd(cwdir, sizeof(cwdir));
-		printf("%s\n", cwdir);
-	}
-	else if (!strcmp(args[0], "ls"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio rpath", NULL);
-		#endif
-		ls(args);
-	}
-	else if (!strcmp(args[0], "help"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio", NULL);
-		#endif
-		printf("Shell - MIT License\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
-	}
-	else
-		return false;
-	return true;
-}
-
 void execCmd(command current)
 /*execCmd() takes in a command
  *data-type, and executes it
@@ -230,21 +114,55 @@ void execCmd(command current)
 {
 	if (!strcmp(current.argv[0], "quit"))
 		exit(0);
-	int c_pid = fork();
-	if (c_pid < 0)
+	else if (!strcmp(current.argv[0], "cd"))
 	{
-		printf("Failed to create child process! Shell failure");
-		exit(1);
+		#ifdef __OpenBSD__
+		pledge("stdio rpath", NULL);
+		#endif
+		int i;
+		char *d;
+		if(!current.argv[1])
+		{
+			d = getenv("HOME");
+			i = chdir(d);
+		}
+		else
+		{
+			i = chdir(reldir(current.argv[1]));
+		}
+		if(i)
+			fprintf(stderr, "Could not change directory to %s!\n", d);
 	}
-	if (!c_pid)
+	else if (!strcmp(current.argv[0], "pwd"))
 	{
-		if (!ShellCommands(current.argv))
+		#ifdef __OpenBSD__
+		pledge("stdio rpath", NULL);
+		#endif
+		getcwd(cwdir, sizeof(cwdir));
+		printf("%s\n", cwdir);
+	}
+	else if (!strcmp(current.argv[0], "help"))
+	{
+		#ifdef __OpenBSD__
+		pledge("stdio", NULL);
+		#endif
+		printf("Shell - MIT License\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
+	}
+	else
+	{
+		int c_pid = fork();
+		if (c_pid < 0)
+		{
+			fprintf(stderr, "Failed to create child process! Shell failure");
+			exit(1);
+		}
+		if (!c_pid)
 		{
 			char *exec;
 			//printf("Child PID is %i\n", getpid());
 			if(current.argv[0][0]!='/'&&strncmp(current.argv[0], "./", 2))
 			{
-				exec = (char*) malloc(s_char * (len(current.argv[0])+5));
+				exec = (char*) malloc(s_char * (strlen(current.argv[0])+5));
 				if (!isnotsu)
 					strcat(exec, "/sbin/");
 				else
@@ -259,7 +177,7 @@ void execCmd(command current)
 				printf("Execution failure! Error: %i\n", errno);
 			exit(0);
 		}
+		else
+			wait(&c_pid);
 	}
-	else
-		wait(&c_pid);
 }

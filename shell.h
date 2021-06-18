@@ -56,9 +56,9 @@ typedef struct
 } command;
 
 /*Here are all of the functions that are required in more than one file*/
-long long len(char*);
 char **wordify(char*);
 command getCommands();
 void execCmd(command);
+char *reldir(char*);
 
 #endif
