@@ -23,8 +23,8 @@
 #include "shell.h"
 
 bool isnotsu;
-const struct command empty;
-struct command cmd;
+//const struct command empty;
+//struct command cmd;
 
 int main(int argc, char *argv[])
 {
@@ -32,8 +32,9 @@ int main(int argc, char *argv[])
 	pledge("stdio rpath proc exec", NULL);
 	#endif
 	
-	struct command *k;
-	k = &cmd;
+	struct command *k = malloc(sizeof(struct command));
+	printf("%i\n", sizeof(*k));
+	
 	
 	//TODO: Fix final problem of allocation - getting the tokens to be able to copy over to the struct
 
