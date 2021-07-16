@@ -22,133 +22,106 @@
  */
 #include "shell.h"
 
-char *getNxtScrpt()
-/*getNxtScrpt() is almost line a scanf()
- *or other input function built for this
- *specific application in mind
- *
- *it reads user input character by character
- *and supports multiline command inputs
- *by using the '\' character at the end of
- *a line of input
+/*iswhitespace() takes in a character, k
+ *and returns true if it is either a space
+ *or a tab, and false otherwise
  */
+bool iswhitespace(char k){return(k==' '||k=='\t'||k=='\n')?true:false;}
+
+char *getArgv(struct command *k)
 {
-	int inchar, prevchar, len = 1;
-	bool multiline = false;
-	char *cmd;
-	cmd = (char *)malloc(s_char * len);
+	static char argv[16384] = {0};
+	int i;
 	
-	while (true)
+	for(i=0;strlen(k->argv[i]); i++)
 	{
-		switch (inchar = getchar())
-		{
-			case '\b' :
-				len--;
-				cmd = (char *)realloc(cmd, s_char * len);
-				break;
-			case '\\' :
-				multiline = true;
-				if (prevchar == '\\')
-					multiline = false;
-				prevchar = inchar;
-				break;
-			case ' ' :
-				cmd[len-1] = (char) inchar;
-				len++;
-				cmd = (char *)realloc(cmd, s_char * len);
-				prevchar = inchar;
-				break;
-			case '\n' :
-				if (multiline)
-				{
-					printf("> ");
-					multiline = false;
-				}
-				else
-				{
-					len++;
-					cmd = (char *)realloc(cmd, s_char * len);
-					cmd[len-1] = (char) inchar;
-					
-					return cmd;
-				}
-				prevchar = inchar;
-				break;
-			default :
-				multiline = false;
-				cmd[len-1] = (char) inchar;
-				len++;
-				cmd = (char *)realloc(cmd, s_char * len);
-				prevchar = inchar;
-				break;
-		}
+		strcat(argv, k->argv[i]);
+		strcat(argv, " ");
 	}
+	return argv;
 }
 
-command getCommands()
+void getCommands(struct command *k)
 /*getCommands() is a very simple command
- *which calls getNxtScrpt() in order to
- *get the next string of commands to parse,
- *and sends it into wordify() in order to
- *split it up into its various components,
+ *which gets the next string of commands
+ *to parse and splits it up into its various
+ *components using strtok(), and
  *builds a data-type command, sets the argv
  *data-section equal to the output of the
- *previous part and the argc section equal
+ *previous parts and the argc section equal
  *to the number of arguments in argv, and
- *then finally send that command back to
+ *then finally sends that command back to
  *get executed by execCmd()
  */
 {
-	command commands;
+	char cmdl[16384];
+	fgets(cmdl, 16384, stdin);
 	
-	commands.argv = &(*wordify(getNxtScrpt()));
-	for(commands.argc=0; (void*)commands.argv[commands.argc]; commands.argc++);
+	long long i=0;
 	
-	return commands;
+	/*Just a quick preliminary measure to make sure
+	 *that on each run, we start on a clean slate
+	 */
+	for(i; i<64; i++) strcpy(k->argv[i], "\0");
+	
+	const char s[3] = " \n";
+	char *tok;
+
+	// Get and copy the first arg
+	tok = strtok(cmdl, s);
+	strcpy(k->argv[i], tok);
+
+	// Continue to get and copy args until end
+	while (true)
+	{
+		i++;
+		tok = strtok(NULL, s);
+		
+		if (tok)
+			strcpy(k->argv[i], tok);
+		else
+			break;
+	}
 }
 
-void execCmd(command current)
+bool ShellCommand(struct command *k)
+{
+	if (!strcmp(k->argv[0], "quit"))
+	{
+		exit(0);
+		return true;
+	}
+	else if (!strcmp(k->argv[0], "pwd"))
+	{
+		printf("%s\n", get_current_dir_name());
+		return true;
+	}
+	else if (!strcmp(k->argv[0], "cd"))
+	{
+		cd(k);
+		return true;
+	}
+	else if (!strcmp(k->argv[0], "ls"))
+	{
+		ls(k);
+		return true;
+	}
+	else if (!strcmp(k->argv[0], "help"))
+	{
+		printf("Shell - MIT License\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
+		return true;
+	}
+	else
+		return false;
+}
+
+void execCmd(struct command *k)
 /*execCmd() takes in a command
  *data-type, and executes it
  */
 {
-	if (!strcmp(current.argv[0], "quit"))
-		exit(0);
-	else if (!strcmp(current.argv[0], "cd"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio rpath", NULL);
-		#endif
-		int i;
-		char *d;
-		if(!current.argv[1])
-		{
-			d = getenv("HOME");
-			i = chdir(d);
-		}
-		else
-		{
-			i = chdir(reldir(current.argv[1]));
-		}
-		if(i)
-			fprintf(stderr, "Could not change directory to %s!\n", d);
-	}
-	else if (!strcmp(current.argv[0], "pwd"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio rpath", NULL);
-		#endif
-		getcwd(cwdir, sizeof(cwdir));
-		printf("%s\n", cwdir);
-	}
-	else if (!strcmp(current.argv[0], "help"))
-	{
-		#ifdef __OpenBSD__
-		pledge("stdio", NULL);
-		#endif
-		printf("Shell - MIT License\nThis shell provides the following internal functions.\n\ncd: Allows you to change the working directory\npwd: Prints the current working directory\nquit: Exits the application\nls: Prints the contents of a given directory\n\t- defaults the the current working directory\nhelp: Prints this dialogue\n");
-	}
-	else
+	printf(k->argv[0]);
+	if(!ShellCommand(k))
 	{
 		int c_pid = fork();
 		if (c_pid < 0)
@@ -158,26 +131,26 @@ void execCmd(command current)
 		}
 		if (!c_pid)
 		{
-			char *exec;
+			char exec[768] = "\0";
 			//printf("Child PID is %i\n", getpid());
-			if(current.argv[0][0]!='/'&&strncmp(current.argv[0], "./", 2))
+			if(k->argv[0][0]!='/'&&strncmp(k->argv[0], "./", 2))
 			{
-				exec = (char*) malloc(s_char * (strlen(current.argv[0])+5));
 				if (!isnotsu)
-					strcat(exec, "/sbin/");
+					strcpy(exec, "/sbin/");
 				else
-					strcat(exec, "/bin/");
-				strcat(exec, current.argv[0]);
-				current.argv[0] = exec;
+					strcpy(exec, "/bin/");
+				strcat(exec, k->argv[0]);
 			}
 			else
-				exec = current.argv[0];
-			if(!execve(exec, current.argv, environ));
+				strcpy(exec, k->argv[0]);
+			//printf ("[%s]\n", exec);	//Just another...useful debugger! ;)
+			if(!execle(exec, getArgv(k), NULL, environ));
 			else
-				printf("Execution failure! Error: %i\n", errno);
+				fprintf(stderr, "Execution failure! Error: %i\n", errno);
 			exit(0);
 		}
 		else
 			wait(&c_pid);
 	}
 }
+

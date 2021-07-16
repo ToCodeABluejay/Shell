@@ -23,23 +23,31 @@
 #include "shell.h"
 
 bool isnotsu;
+const struct command empty;
+struct command cmd;
 
 int main(int argc, char *argv[])
 {
 	#ifdef __OpenBSD__
 	pledge("stdio rpath proc exec", NULL);
 	#endif
+	
+	struct command *k;
+	k = &cmd;
+	
+	//TODO: Fix final problem of allocation - getting the tokens to be able to copy over to the struct
 
 	isnotsu = geteuid(); // Check if the user is a super-user or not
 	while (1)
 	//Infinite loop to keep the program going until exited
-	{
+	{	
 		char p;
 		if (!isnotsu)
 			p = '#';
 		else
 			p = '$';
     		printf("%s%c ", getenv("HOME"), p); //Prints the prompt
-    		execCmd(getCommands()); //Gets and executes the commands
+    		getCommands(k);
+    		execCmd(k); //Gets and executes the commands
 	}
 }

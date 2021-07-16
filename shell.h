@@ -22,25 +22,24 @@
  */
 #ifndef SHELL_H
 #define SHELL_H
+#ifdef __linux__
 #define _GNU_SOURCE
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
+#include <limits.h>
 
 extern char **environ;
 extern int errno;
 
-extern const size_t s_char;
-extern FILE *input;
-
 extern bool isnotsu; // Tracks super-user status
-extern char cwdir[2048];
+extern char cwdir[PATH_MAX];
 
 /* Typedef defines a new datatype called 'command' which is composed of a 'struct',
  * in other words, a 'structure', which is composed of an integer
@@ -49,16 +48,21 @@ extern char cwdir[2048];
  * to the command;
  */
 
-typedef struct
+struct command
 {
 	int argc;
-	char **argv;
-} command;
+	char argv[64][512];
+};
 
 /*Here are all of the functions that are required in more than one file*/
-char **wordify(char*);
-command getCommands();
-void execCmd(command);
-char *reldir(char*);
+//void wordify(struct command k);
+void getCommands(struct command *);
+void execCmd(struct command *);
+void cd(struct command *);
+void ls(struct command *);
+bool iswhitespace(char k);
+#ifndef __linux__
+char *get_current_dir_name(void);
+#endif
 
 #endif
