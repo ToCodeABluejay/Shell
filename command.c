@@ -66,6 +66,8 @@ void getCommands(struct command *k)
 	
 	const char s[3] = " \n";
 	char *tok;
+	
+	i=0;
 
 	// Get and copy the first arg
 	tok = strtok(cmdl, s);
@@ -78,7 +80,10 @@ void getCommands(struct command *k)
 		tok = strtok(NULL, s);
 		
 		if (tok)
+		{
 			strcpy(k->argv[i], tok);
+			printf(k->argv[i]);
+		}
 		else
 			break;
 	}

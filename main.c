@@ -23,8 +23,6 @@
 #include "shell.h"
 
 bool isnotsu;
-//const struct command empty;
-//struct command cmd;
 
 int main(int argc, char *argv[])
 {
@@ -34,9 +32,6 @@ int main(int argc, char *argv[])
 	
 	struct command *k = malloc(sizeof(struct command));
 	printf("%i\n", sizeof(*k));
-	
-	
-	//TODO: Fix final problem of allocation - getting the tokens to be able to copy over to the struct
 
 	isnotsu = geteuid(); // Check if the user is a super-user or not
 	while (1)
