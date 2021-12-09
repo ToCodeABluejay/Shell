@@ -24,7 +24,7 @@
 
 bool isnotsu;
 
-int main(int argc, char *argv[])
+int main()
 {
 	#ifdef __OpenBSD__
 	pledge("stdio rpath proc exec", NULL);
