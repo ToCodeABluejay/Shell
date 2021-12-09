@@ -22,34 +22,34 @@
  */
 #include "shell.h"
 
-/*char *absdir(char *s)
-//TODO: Get this function to be able to be a viable alternative to realpath() w/support for path's relative to homedir
+char *absdir(char *s)
 {
-	static char absdir[PATH_MAX];
+	static char dir[PATH_MAX];
 	
 	if(!strncmp(s, "~", 1)) // In this context '~' is used to mean the users home directory
 	{	//So this sections builds a relative pathway from the starting point of the given home directory
-			int i=0;	//In place of the beginning '~'
+			unsigned long i=1;	//In place of the beginning '~'
 			i+=strlen(s);	//And so that '~/Documents' would be equivalent to '/home/jdoe/Documents'
 		
 			char end[i];
-			for (i=0; i<strlen(end); i++) end[i]=s[i+1];
+			for (i=0; i<=strlen(end); i++) end[i]=s[i+1];
 			end[i+1]='\0';
 		
-			strcpy(absdir, getenv("HOME"));
-			strcat(absdir, end);
-			
-			return absdir;
+			strcpy(dir, getenv("HOME"));
+			strcat(dir, end);
 	}
 	else
-		return s;
-}*/
+            strcpy(dir, s);
+    strcpy(dir, realpath(dir, NULL));
+    return dir;
+}
 
 #ifndef __linux__
 char *get_current_dir_name(void)	//For all other UNIX-like platforms, we can just roll our own. It's fairly easy...
 {
 	static char cwdir[PATH_MAX];
 	getcwd(cwdir, sizeof(cwdir));
+    return cwdir;
 }
 #endif
 
@@ -57,7 +57,6 @@ void cd(struct command *k)
 {
 	int i;
 	char d[PATH_MAX];
-	printf(k->argv[1]);
 	if(!k->argv[1])
 	{
 		strcpy(d, getenv("HOME"));
@@ -65,7 +64,7 @@ void cd(struct command *k)
 	}
 	else
 	{
-		char *p = realpath(k->argv[1], NULL);
+		char *p = absdir(k->argv[1]);
 		if(!p)
 		{
 			fprintf(stderr, "Could change directory to [%s]!\n", k->argv[1]);
@@ -74,7 +73,6 @@ void cd(struct command *k)
 		{
 			i = chdir(p);
 		}
-		free(p);
 	}
 	if (i)
 		fprintf(stderr, "Could not change directory to %s!\n", k->argv[1]);
@@ -85,10 +83,10 @@ void ls(struct command *k)
 	DIR *dir;
 	struct dirent *contents;
 	char path[PATH_MAX];
-	/*if(!strlen(k->argv[1]))	//If no argument is given, assume that we are working with the curent active
+	if(!strlen(k->argv[1]))	//If no argument is given, assume that we are working with the curent active
 		dir = opendir("."); // directory
-	else*/
-		dir = opendir(realpath(k->argv[1], path));	//We can uncomment the above if-else statement when
+	else
+		dir = opendir(absdir(k->argv[1]));	//We can uncomment the above if-else statement when
 	if (dir)	// we can replace realpath() w/absdir()
 	{
 		int i=0;	//This is a tracker to keep a tab on how many items have been printed

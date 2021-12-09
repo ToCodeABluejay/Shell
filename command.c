@@ -62,7 +62,7 @@ void getCommands(struct command *k)
 	/*Just a quick preliminary measure to make sure
 	 *that on each run, we start on a clean slate
 	 */
-	for(i; i<64; i++) strcpy(k->argv[i], "\0");
+	for(int j=0; j<64; j++) strcpy(k->argv[j], "\0");
 	
 	const char s[3] = " \n";
 	char *tok;
@@ -82,7 +82,7 @@ void getCommands(struct command *k)
 		if (tok)
 		{
 			strcpy(k->argv[i], tok);
-			printf(k->argv[i]);
+			//printf("%s", k->argv[i]);      //Debuggers...debuggers everywhere, and before you even ask, yes I also use gdb ;)
 		}
 		else
 			break;
@@ -125,7 +125,7 @@ void execCmd(struct command *k)
  *data-type, and executes it
  */
 {
-	printf(k->argv[0]);
+	//printf("%s", k->argv[0]);    //Just a good way to make sure that our tokens have transfered ;)
 	if(!ShellCommand(k))
 	{
 		int c_pid = fork();
