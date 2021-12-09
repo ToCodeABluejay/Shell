@@ -41,13 +41,6 @@ extern int errno;
 extern bool isnotsu; // Tracks super-user status
 extern char cwdir[PATH_MAX];
 
-/* Typedef defines a new datatype called 'command' which is composed of a 'struct',
- * in other words, a 'structure', which is composed of an integer
- * 'argc' which keeps track of how many arguments are passed to the command, and an
- * array of character arrays 'argv' which holds the arguments that are to be passed
- * to the command;
- */
-
 struct command
 {
 	int argc;
@@ -55,7 +48,6 @@ struct command
 };
 
 /*Here are all of the functions that are required in more than one file*/
-//void wordify(struct command k);
 void getCommands(struct command *);
 void execCmd(struct command *);
 void cd(struct command *);
