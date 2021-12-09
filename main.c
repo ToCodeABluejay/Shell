@@ -31,7 +31,7 @@ int main()
 	#endif
 	
 	struct command *k = malloc(sizeof(struct command));
-	printf("%lu\n", sizeof(*k));
+	//printf("%lu\n", sizeof(*k));
 
 	isnotsu = geteuid(); // Check if the user is a super-user or not
 	while (1)
