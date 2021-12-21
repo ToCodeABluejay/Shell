@@ -8,5 +8,3 @@ Simply compile and install with the following commands:
     $ make
     # make install
     $ make clean
-
-And then install by copying into your binaries! :)
