@@ -49,7 +49,7 @@ char *get_current_dir_name(void)	//For all other UNIX-like platforms, we can jus
 {
 	static char cwdir[PATH_MAX];
 	getcwd(cwdir, sizeof(cwdir));
-    return cwdir;
+	return cwdir;
 }
 #endif
 
