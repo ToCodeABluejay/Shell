@@ -140,17 +140,23 @@ void execCmd(struct command *k)
 			//printf("Child PID is %i\n", getpid());
 			if(k->argv[0][0]!='/'&&strncmp(k->argv[0], "./", 2))
 			{
-				if (!isnotsu)
-					strcpy(exec, "/sbin/");
-				else
-					strcpy(exec, "/bin/");
+				strcpy(exec, "/bin/");
 				strcat(exec, k->argv[0]);
 			}
 			else
 				strcpy(exec, k->argv[0]);
 			//printf ("[%s]\n", exec);	//Just another...useful debugger! ;)
-			if(!execle(exec, getArgv(k), NULL, environ));
-			else
+			if(execle(exec, getArgv(k), NULL, environ))
+			{
+				if (!isnotsu)
+				{
+					strcpy(exec, "/sbin/");
+					strcat(exec, k->argv[0]);
+					if(execle(exec, getArgv(k), NULL, environ))
+						fprintf(stderr, "Execution failure! Error: %i\n", errno);
+				}
+			}
+			else if (!isnotsu)
 				fprintf(stderr, "Execution failure! Error: %i\n", errno);
 			exit(0);
 		}
